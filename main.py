@@ -12,6 +12,7 @@ load_dotenv()
 REDDIT_ID = os.getenv('REDDIT_ID')
 REDDIT_SECRET = os.getenv('REDDIT_SECRET')
 REDDIT_PASSWORD = os.getenv('REDDIT_PASSWORD')
+REDDIT_USER = os.getenv('REDDIT_USER')
 
 reddit_posts = pd.DataFrame(columns = ["Title", "Link", "Type", "Content"])
 print(reddit_posts)
@@ -20,8 +21,8 @@ reddit = praw.Reddit(
     client_id=REDDIT_ID,
     client_secret=REDDIT_SECRET,
     password=REDDIT_PASSWORD,
-    user_agent="testscript by u/midnitte",
-    username="midnitte",
+    user_agent="Reddit2Notion by u/midnitte",
+    username=REDDIT_USER,
 )
 
 for item in reddit.user.me().saved(limit=None):
@@ -31,12 +32,23 @@ for item in reddit.user.me().saved(limit=None):
     else:
         reddit_posts = reddit_posts.append(pd.Series([item.submission.title, "https://reddit.com/" + item.permalink, "Comment", item.body], index=reddit_posts.columns), ignore_index=True)
 
+my_path = "./reddit_posts.csv"
+try:
+    if os.path.getsize(my_path) > 0:
+        # Non empty file exists
+        # ... your code ...
+        print("File isn't empty")
+    else:
+        print("File is empty")
+        # Empty file exists
+        # ... your code ...
+except OSError as e:
+    print("File doesn't exist")
+    # File does not exists or is non accessible
+    # ... your code ...
 
 API_KEY = os.getenv('NOTION_TOKEN')
-
-print(API_KEY)
 notion = Client(auth=API_KEY)
-
 DB_NAME = "Test Reddit"
 
 def search_db(dbname):
@@ -67,7 +79,8 @@ def create_page(page_title, link_url, post_type, body_content):
                 {
                 'type': 'text',
                 'text': {
-                    'content': body_content,
+                    # Get the first 1000 characters to prevent triggering Notion API limit
+                    'content': body_content[0:1000],
                 },
                 },
             ],
@@ -75,7 +88,6 @@ def create_page(page_title, link_url, post_type, body_content):
         },
         ],
     )
-#create_page("Test Title", "https://test.com/func", "Comment", "ibsa dera dee")
 
 for index, page in reddit_posts.iterrows():
     create_page(page['Title'], page['Link'], page['Type'], page['Content'])
