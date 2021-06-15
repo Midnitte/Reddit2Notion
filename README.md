@@ -14,4 +14,4 @@ REDDIT_PASSWORD=""
 REDDIT_USER=""
 ```
 
-In Notion, create a new database called `Test Reddit`. You can then run the script.
+In Notion, create a new database called `Test Reddit` (or import [this template](https://www.notion.so/midnitte/c099bc8bb94e46dd80e839f949b52bd1?v=e30c1ee61617401a9fcd180a073958b9)). You can then run the script.
